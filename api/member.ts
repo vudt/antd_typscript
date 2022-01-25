@@ -27,3 +27,13 @@ export const createMember = async(params: any) => {
     console.log(error.message)
   }
 }
+
+export const updateMember = async(id: number, params: any) => {
+  try {
+    const headers = {'Content-Type': 'multipart/form-data'}
+    const response = await axios.put(`https://corecmms.com/api/v1/members/${id}`, params, {headers: headers})
+    return response.data
+  } catch (error) {
+    console.log(error.message)
+  }
+}

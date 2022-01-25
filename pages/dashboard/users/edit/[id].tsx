@@ -6,11 +6,13 @@ import { IBreadcrumb } from "../../../../interfaces";
 import FormUser from "../../../../components/users/form";
 import { Member } from "../../../../models/Member";
 import { getMember } from "../../../../api/member";
+import { useRouter } from "next/router";
 
 export default function Edit(pageProps) {
   const { Content } = Layout;
   const [member, setMember] = useState<Member>()
-
+  const router = useRouter();
+  
   const routes: IBreadcrumb[] = [
     { path: 'index', breadcrumbName: 'Dashboard' },
     { path: '/users', breadcrumbName: 'Users' },
@@ -18,9 +20,13 @@ export default function Edit(pageProps) {
   ]
 
   useEffect(()=>{
+    if (router.query.create == 'success') {
+      message.success('Create successfully!')
+    }
     (async () => {
       try {
-        const response = await getMember(2)
+        console.log(parseInt(router.query.id as string))
+        const response = await getMember(parseInt(router.query.id as string))
         console.log(response)
         if (response.data) {
           const memberState = new Member(response.data)
@@ -30,7 +36,7 @@ export default function Edit(pageProps) {
         console.log(error)
       }
     })()
-  }, [])
+  }, [router.query.id])
 
   console.log(member)
 

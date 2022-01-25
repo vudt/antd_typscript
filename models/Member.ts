@@ -15,7 +15,7 @@ export class Member {
     this.last_name = memberResponse?.last_name
     this.email = memberResponse?.email
     this.gender = memberResponse?.gender
-    this.date_of_birth = moment(memberResponse.date_of_birth, 'YYYY-MM-DD')
+    this.date_of_birth = memberResponse.date_of_birth ? moment(memberResponse.date_of_birth, 'YYYY-MM-DD') : ''
     this.images = memberResponse?.image
   }
 

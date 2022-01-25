@@ -59,7 +59,7 @@ const TableUsers: React.FC = () => {
       render: (status) => {
         const color: string = status == 1 ? 'green' : 'volcano';
         const text: string = status == 1 ? 'Publish' : 'Un publish';
-        return <Tag color={color} key={status}>Publish</Tag>
+        return <Tag color={color} key={status}>{text}</Tag>
       }
     },
     {

@@ -3,7 +3,7 @@ import { Form, Input, Button, Row, Col, Radio, DatePicker, Upload, message } fro
 import { PlusOutlined } from '@ant-design/icons';
 import { UploadFile } from "antd/lib/upload/interface";
 import axios from 'axios';
-import { createMember } from '../../api/member';
+import { createMember, updateMember } from '../../api/member';
 import { useRouter } from 'next/router';
 import { Member } from '../../models/Member';
 // import {MemberObj} from '../../interfaces/member';
@@ -17,27 +17,19 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([])
   const router = useRouter()
+  const {action, member} = props
   // console.log(parseInt(router.query.id as string))
-  // console.log(props.member)
 
-  // useEffect(()=>{
-  //   if (props.action == 'new') return;
-  //   (async () => {
-  //     try {
-  //       const response = await axios.get('https://corecmms.com/api/v1/pictures')
-  //       if (response.data) {
-  //         setFileList(response.data)
-  //       }
-  //     } catch (error) {
-  //       console.log(error)
-  //     }
-  //   })()
-  // }, [])
 
   useEffect(() => {
     console.log(props.member)
+    form.resetFields();
     if (props.member) {
-      setFileList(props.member.images)
+      let images: any[] = []
+      if (props.member.images) {
+        images = props.member.images
+      } 
+      setFileList(images)
     }
   },[props.member])
 
@@ -72,7 +64,7 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
   const wrapperCol = { xs: 24, md: 12, xl: 8 }
 
   const onFinish = async(values: any) => {
-    console.log('Success:', values)
+    // router.push(`/dashboard/users/edit/5?create=success`, undefined, {shallow: true})
     const formData = new FormData()
     for(var key in values) {
       if (key === 'image') {
@@ -80,10 +72,23 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
       } else {
         formData.append(key, values[key])
       }
-      formData.append(key, values[key])
     }
-    const response = await createMember(formData)
-    console.log(response)
+    
+    if (action == 'new') {
+      const response = await createMember(formData)
+      if (response.id) {
+        // redirect
+        router.push({
+          pathname:  `/dashboard/users/edit/${response.id}`, 
+          query: {create: 'success'}
+        })
+      }
+    } else if (action == 'edit') {
+      const response = await updateMember(member.id, formData)
+      if (response.id) {
+        message.success('Updated successfully.');
+      }
+    }
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -157,7 +162,6 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
   console.log(props.member)
 
   return(
-    
     <Form
         form={form}
         name="frmUser"
@@ -205,9 +209,9 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
               name="password"
               rules={
                 [
-                  {required: true, message: 'Please input your password!'},
+                  {required: props.member.id ? false : true, message: 'Please input your password!'},
                   {min: 6, message: 'Password at least 6 characters!'}, 
-                  {max: 20, message: 'Password cannot more than 20 characters!'}
+                  {max: 20, message: 'Password cannot more than 20 characters!'},
                 ]
               }
             >
@@ -219,13 +223,17 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
               label="Confirm Password"
               name="password_confirm"
               rules={[
-                {required: true, message: 'Please confirm your password!'},
-                // {validator: validate_confirm_password}
+                {required: props.member.id ? false : true, message: 'Please confirm your password!'},
                 {
                   validator(rule, value) {
-                    if (!value || form.getFieldValue('password') === value) {
+                    if (!props.member.id) {
+                      if (!value || form.getFieldValue('password') === value) {
+                        return Promise.resolve();
+                      }
+                    } else if(form.getFieldValue('password') === value) {
                       return Promise.resolve();
                     }
+                    
                     return Promise.reject(new Error('Confirm password do not match!'))
                   }
                 }
@@ -278,11 +286,9 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
             </Form.Item>
           </Col>
         </Row>
-
         <Form.Item wrapperCol={{ offset: 12, span: 12 }}>
           <Button type="primary" htmlType="submit">Submit</Button>
         </Form.Item>
-
       </Form>
   )
 }
