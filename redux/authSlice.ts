@@ -60,11 +60,11 @@ export const authSlice = createSlice({
       console.log('login here')
       const userData: UserInfo = {
         id: 74,
-        email: "danny@main.com",
+        email: "email@gmail.com",
         full_name: "Danny",
-        image: 'https://corecmms.com/system/admin/photos/images/000/000/727/original/yonggui.jpg',
-        auth_token: 'sdadasd',
-        role: 4
+        image: 'image.png',
+        auth_token: '123456',
+        role: 123456
       }
       state.isLogged = true
       state.userInfo = userData

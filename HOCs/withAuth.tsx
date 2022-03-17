@@ -15,7 +15,7 @@ export default function withAuth<T>(WrappedComponent: React.ComponentType<T>) {
     const dispatch = useDispatch();
     const [token, setToken] = useState(null);
     const { userInfo, errorMessage } = useSelector((state: RootState) => state.auth)
-
+    
     useEffect(()=>{
       const user_token: string = localStorage.getItem('user_token')
       if (user_token) {
@@ -24,7 +24,7 @@ export default function withAuth<T>(WrappedComponent: React.ComponentType<T>) {
         dispatch(clearState())
         router.push('/login')
       }
-    },[])
+    },[router.query])
 
     useEffect(() => {
       if (userInfo) {
@@ -50,9 +50,9 @@ export default function withAuth<T>(WrappedComponent: React.ComponentType<T>) {
 
     if (token) {
       return <WrappedComponent 
-                user={null}
-                isAuthenticated={false}
-                authToken={null}
+                user={userInfo}
+                isAuthenticated={true}
+                authToken={token}
                 {...props} 
               />
     } 

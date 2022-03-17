@@ -10,6 +10,7 @@ import Link from "next/link";
 import withAuth from "../../../../HOCs/withAuth";
 
 const Edit = (pageProps: any) => {
+  console.log(pageProps)
   const { Content } = Layout;
   const [member, setMember] = useState<Member>()
   const router = useRouter();

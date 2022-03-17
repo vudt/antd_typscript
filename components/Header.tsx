@@ -1,16 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layout, Menu, Dropdown, Space, Divider, Avatar, Badge } from 'antd';
 import { UserOutlined, LogoutOutlined, BellOutlined, DownOutlined } from '@ant-design/icons';
 import { useDispatch } from 'react-redux';
 import { userLogOut } from '../redux/authSlice';
-import { AppDispatch, useAppDispatch } from '../redux/store';
+import { AppDispatch, useAppDispatch, useAppSelector } from '../redux/store';
 import { useRouter } from 'next/router';
+import { DropdownButtonProps } from 'antd/lib/dropdown';
 
-const Header = (props) => {
+const Header = () => {
+  const { userInfo } = useAppSelector(state => state.auth)
+  const [user, setUser] = useState(null)
   // const dispatch: AppDispatch = useDispatch()
   const dispatch = useAppDispatch()
   const router = useRouter()
   const { Header } = Layout;
+
+  useEffect(() => {
+    if (userInfo) {
+      setUser(userInfo)
+    }
+  }, [userInfo])
 
   const logOut = async() => {
     const status = await dispatch(userLogOut()).unwrap()
@@ -63,7 +72,9 @@ const Header = (props) => {
           <Space>
             <Dropdown overlay={menu}>
               <a style={{color: '#fff'}} className="ant-dropdown-link">
-                Hi, Vudang <DownOutlined />
+                  {user && `Hi, ${user.full_name}`} 
+                  &nbsp;
+                  {user && ( <DownOutlined />)}
               </a>
             </Dropdown>
           </Space>
