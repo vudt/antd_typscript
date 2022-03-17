@@ -1,22 +1,33 @@
 import React, { useEffect, useState } from "react";
+import Head from "next/head";
 import { Layout, PageHeader, Form, Input, Button, Row, Col, Radio, DatePicker, Upload, Modal, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { UploadFile } from "antd/lib/upload/interface";
-import axios from 'axios';
+import Link from "next/link";
 import { createMember } from "../../../api/member";
 import { IBreadcrumb } from "../../../interfaces";
 import FormUser from "../../../components/users/form";
 import { Member } from "../../../models/Member";
+import withAuth from "../../../HOCs/withAuth";
 
-export default function CreateUser(pageProps) {
+const CreateUser = (pageProps) => {
   const { Content } = Layout;
   const [member, setMember] = useState<Member>()
 
   const routes: IBreadcrumb[] = [
-    { path: 'index', breadcrumbName: 'Dashboard' },
-    { path: '/users', breadcrumbName: 'Users' },
-    { path: 'second', breadcrumbName: 'Add new' }
+    { path: '/', breadcrumbName: 'Dashboard' },
+    { path: '/dashboard/users', breadcrumbName: 'Users' },
+    { path: '', breadcrumbName: 'Add new' }
   ]
+
+  const itemRender = (route, params, routes, paths) => {
+    const last = routes.indexOf(route) === routes.length - 1;
+    return last ? (
+      <span>{route.breadcrumbName}</span>
+    ) : (
+      <Link href={`/${paths.join('/')}`}>{route.breadcrumbName}</Link>
+    );
+  }
 
   useEffect(()=>{
     const defaultState = {
@@ -35,15 +46,30 @@ export default function CreateUser(pageProps) {
 
   return(
     <>
-    <PageHeader
-      ghost={false}
-      title="Create user"
-      breadcrumb={{ routes }}
-      subTitle="This is a subtitle"
-    />
-    <Content className="site-layout-background" style={{ padding: 24, margin: 24, minHeight: 280}}>
-      <FormUser action="new" member={member} />
-    </Content>
+      <Head>
+        <title>Add user - Dashboard</title>
+      </Head>
+      <PageHeader
+        ghost={false}
+        title="Create user"
+        breadcrumb={{ routes, itemRender }}
+        subTitle=""
+      />
+      <Content className="site-layout-background" style={{ padding: 24, margin: 24, minHeight: 280}}>
+        <FormUser action="new" member={member} />
+      </Content>
     </>
   )
 }
+
+// CreateUser.layout = "Dashboard"
+
+export async function getServerSideProps(context: any) {
+  return {
+		props: {
+      layout: "Dashboard"
+		}
+	}
+}
+
+export default withAuth(CreateUser);

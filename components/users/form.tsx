@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Row, Col, Radio, DatePicker, Upload, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Form, Input, InputNumber, Button, Row, Col, Radio, DatePicker, Upload, Select, Space, message } from 'antd';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { UploadFile } from "antd/lib/upload/interface";
 import axios from 'axios';
 import { createMember, updateMember } from '../../api/member';
 import { useRouter } from 'next/router';
 import { Member } from '../../models/Member';
+import { Spin } from "antd";
+const yourhandle = require('countrycitystatejson')
 // import {MemberObj} from '../../interfaces/member';
 
 interface PropsFormUser {
@@ -18,18 +20,24 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
   const [fileList, setFileList] = useState<UploadFile[]>([])
   const router = useRouter()
   const {action, member} = props
+  const { Option } = Select
+  const [arrCities, setListCity] = useState<string[]>([])
   // console.log(parseInt(router.query.id as string))
-
-
+  
   useEffect(() => {
     console.log(props.member)
     form.resetFields();
+
     if (props.member) {
       let images: any[] = []
       if (props.member.images) {
         images = props.member.images
       } 
       setFileList(images)
+      if (props.member.country) {
+        const listCity: string[] = yourhandle.getStatesByShort(props.member.country)
+        setListCity(listCity)
+      }
     }
   },[props.member])
 
@@ -65,9 +73,11 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
 
   const onFinish = async(values: any) => {
     // router.push(`/dashboard/users/edit/5?create=success`, undefined, {shallow: true})
+    // console.log(values)
+    // return false
     const formData = new FormData()
     for(var key in values) {
-      if (key === 'image') {
+      if (key === 'image' || key === 'transfer_history') {
         formData.append(key, JSON.stringify(values[key]))
       } else {
         formData.append(key, values[key])
@@ -141,6 +151,40 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
     return true
   }
 
+  const renderCountries = () => {
+    // const listCountries = yourhandle.getCountries()
+    let options = yourhandle.getCountries().map((item: any, index: number) => {
+      return (
+        <Option key={index} value={item.shortName}>{item.name}</Option>
+      )
+    })
+    return options
+  }
+
+  const renderCities = (arrCities: string[]) => {
+    if (arrCities.length == 0) return 
+    let options = arrCities.map((name: any, index: number) => {
+      return (
+        <Option key={index} value={name}>{name}</Option>
+      )
+    })
+    return options
+  }
+
+  const onChangeCountry = (value: any) => {
+    form.setFieldsValue({city: null})
+    const listCity: string[] = yourhandle.getStatesByShort(value)
+    setListCity(listCity)
+  }
+
+  const onChangeCity = (value: any) => {
+    console.log(value)
+  }
+
+  const onSearch = (value: any) => {
+    // console.log(`search ${value}`)
+  }
+
   const validate_confirm_password = async(rule, value) => {
     if (!value || form.getFieldValue('password') === value) {
       return Promise.resolve();
@@ -156,7 +200,7 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
   );
 
   if (!props.member) {
-    return null
+    return <div style={{textAlign: 'center', margin: '60px 0'}}><Spin size="large" /></div>
   }
 
   console.log(props.member)
@@ -167,7 +211,7 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
         name="frmUser"
         labelCol={labelCol}
         wrapperCol={wrapperCol}
-        initialValues={props.member}
+        initialValues={{...props.member}}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
@@ -256,6 +300,43 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
           </Col>
           <Col span={24}>
             <Form.Item
+              label="Country"
+              name="country"
+              rules={[{ required: true, message: 'Please input your country!' }]}
+            >
+              <Select
+                showSearch
+                placeholder="Select your country"
+                optionFilterProp="children"
+                onChange={onChangeCountry}
+                onSearch={onSearch}
+                filterOption={(input, option) => {
+                  return (
+                    option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0 
+                  );
+                }}
+              >
+                { renderCountries() }
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={24}>
+            <Form.Item
+              label="City"
+              name="city"
+              rules={[{ required: true, message: 'Please input your city!' }]}
+            >
+              <Select
+                showSearch
+                placeholder="Select your city"
+                optionFilterProp="children"
+              >
+                { renderCities(arrCities) }
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={24}>
+            <Form.Item
               label="Date of birth"
               name="date_of_birth"
               rules={[{ required: true, message: 'Please input your date of bith!' }]}
@@ -263,6 +344,69 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
               <DatePicker format={'DD/MM/YYYY'} />
             </Form.Item>
           </Col>
+
+          <Col offset={8} span={16}>
+            <label style={{display: 'block', margin: '0 0 10px'}}><strong>Transfer history</strong></label>
+            <Form.List 
+              name="transfer_history"
+              rules={[
+                {
+                  validator: async (_, transfer_history) => {
+                    if (!transfer_history || transfer_history.length < 1) {
+                      return Promise.reject(new Error('Please add transfer history.'));
+                    }
+                  },
+                },
+              ]}
+            >
+              {(fields, { add, remove }, { errors }) => (
+                <>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                      <Form.Item
+                        wrapperCol={{xs: 24}}
+                        {...restField}
+                        name={[name, 'club_name']}
+                        rules={[{ required: true, message: 'Missing Club name' }]}
+                      >
+                        <Input placeholder="Club Name" style={{ width: '100%' }} />
+                      </Form.Item>
+                      <Form.Item
+                        wrapperCol={{xs: 24}}
+                        {...restField}
+                        name={[name, 'join_date']}
+                        rules={[{ required: true, message: 'Missing start date' }]}
+                      >
+                        {/* <Input placeholder="Join Date" style={{ width: '100%' }} /> */}
+                        <DatePicker placeholder="Join Date" format={'DD/MM/YYYY'} />
+                      </Form.Item>
+                      <Form.Item
+                        wrapperCol={{xs: 24}}
+                        {...restField}
+                        name={[name, 'fee']}
+                        rules={[{ required: true, message: 'Missing fee' }]}
+                      >
+                        <InputNumber
+                          formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                          parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                          placeholder="Fee" 
+                          style={{ width: '100%' }} 
+                        />
+                      </Form.Item>
+                      <MinusCircleOutlined onClick={() => remove(name)} />
+                    </Space>
+                  ))}
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                      Add transfer history
+                    </Button>
+                    <Form.ErrorList errors={errors} />
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
+          </Col>
+
           <Col span={24}>
             <Form.Item
               label="Gallery"
@@ -286,7 +430,7 @@ const FormUser: React.FC<PropsFormUser> = (props) => {
             </Form.Item>
           </Col>
         </Row>
-        <Form.Item wrapperCol={{ offset: 12, span: 12 }}>
+        <Form.Item wrapperCol={{ offset: 8, span: 12 }}>
           <Button type="primary" htmlType="submit">Submit</Button>
         </Form.Item>
       </Form>

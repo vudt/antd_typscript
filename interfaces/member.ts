@@ -2,7 +2,7 @@ export interface DataMember {
   id: number,
   key: number,
   full_name: string,
-  dob: string,
+  date_of_birth: string,
   address: string,
   status: number
 }
@@ -20,7 +20,8 @@ export interface MemberObj {
 export interface IMemberParamsRequest {
   page: number,
   per_page: number,
-  sort: string,
+  order_by: string,
+  order: string,
   status?: any
 }
 

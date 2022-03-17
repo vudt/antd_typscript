@@ -1,21 +1,34 @@
 import React from 'react';
 import { Layout, Menu, Dropdown, Space, Divider, Avatar, Badge } from 'antd';
 import { UserOutlined, LogoutOutlined, BellOutlined, DownOutlined } from '@ant-design/icons';
+import { useDispatch } from 'react-redux';
+import { userLogOut } from '../redux/authSlice';
+import { AppDispatch, useAppDispatch } from '../redux/store';
+import { useRouter } from 'next/router';
 
 const Header = (props) => {
+  // const dispatch: AppDispatch = useDispatch()
+  const dispatch = useAppDispatch()
+  const router = useRouter()
   const { Header } = Layout;
+
+  const logOut = async() => {
+    const status = await dispatch(userLogOut()).unwrap()
+    if (status) {
+      router.push('/login')
+    }
+  }
+
   const menu = (
     <Menu style={{minWidth: '150px'}}>
       <Menu.Item key="1" icon={<UserOutlined />}>
-        <a target="_blank" rel="noopener noreferrer" href="https://www.antgroup.com">
+        <a target="_blank" rel="noopener noreferrer">
           Profile
         </a>
       </Menu.Item>
       <Divider style={{margin: 0}} />
       <Menu.Item key="2" icon={<LogoutOutlined/>}>
-        <a target="_blank" rel="noopener noreferrer" href="https://www.antgroup.com">
-          Logout
-        </a>
+        <a onClick={logOut}>Logout</a>
       </Menu.Item>
     </Menu>
   );

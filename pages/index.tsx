@@ -1,29 +1,11 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-import ListTodo from '../components/ListTodo'
-import AddTodo from '../components/AddTodo'
-import { ITodo } from '../interfaces'
-import { Todo } from '../models/todo'
+import Link from 'next/link'
+import withAuth from '../HOCs/withAuth'
 
-
-export default function Home() {
-  const initTodo = [
-    new Todo({id: 1, name: 'Todo 1'}),
-    new Todo({id: 2, name: 'Todo 2'}),
-    new Todo({id: 3, name: 'Todo 3'})
-  ]
-  const [listTodo, setListTodo] = useState<ITodo[]>(initTodo);
-
-  const handleAddTodo = (title: string) => {
-    const todo: Todo = {
-      id: Math.floor((Math.random()*1000) + 1),
-      name: title
-    }
-    const newArr: Todo[] = [...listTodo, todo]
-    setListTodo(newArr)
-  }
+const Home = () => {
 
   return (
     <div className={styles.container}>
@@ -38,13 +20,10 @@ export default function Home() {
         <h1 className={styles.title}>
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
-        <div className="add__todo">
-          <AddTodo handleAddTodo={handleAddTodo} />
-        </div>
-        <div className="list__todo">
-          <ListTodo items={listTodo} />
-        </div>
-        
+        <ul>
+          <li><Link href="/dashboard/users"><a>Dashboard</a></Link></li>
+          <li><Link href="/login"><a>Login</a></Link></li>
+        </ul>
       </main>
 
       <footer className={styles.footer}>
@@ -62,3 +41,13 @@ export default function Home() {
     </div>
   )
 }
+
+export async function getServerSideProps(context: any) {
+  return {
+		props: {
+			layout: 'Login'
+		}
+	}
+}
+// export default withAuth(Home)
+export default Home;

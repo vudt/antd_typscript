@@ -1,5 +1,9 @@
 module.exports = {
   reactStrictMode: true,
+	experimental: {
+    // Enables the styled-components SWC transform
+    styledComponents: true
+  },
   env: {
   	END_POINT: "http://localhost:3000",
   	ROOT_DOMAIN: "http://histolabsg.greenview-bcons.com",

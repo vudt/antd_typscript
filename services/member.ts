@@ -9,7 +9,7 @@ export const prepareListMembers = (listMembers: DataMember[]) : DataMember[] => 
       id: member.id,
       key: member.id,
       full_name: member.fullname(),
-      dob: moment(item.date_of_birth).format("DD-MM-YYYY"),
+      date_of_birth: moment(item.date_of_birth).format("DD-MM-YYYY"),
       address: '415 tô ngọc vân',
       status: item.status
     }

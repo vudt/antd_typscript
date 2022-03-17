@@ -1,26 +1,41 @@
-import React, { useEffect, useState } from "react";
-import { Layout, Table, Tag, Space, PageHeader, Button } from 'antd';
+import React from "react";
+import Head from "next/head";
+import { Layout, PageHeader, Button } from 'antd';
+import Link from "next/link";
 import { IBreadcrumb } from "../../../interfaces";
 import TableUSer from "../../../components/users/table";
+import withAuth from "../../../HOCs/withAuth";
 
-export default function Users(pageProps) {
+const Users = (pageProps: any) => {
   const { Content } = Layout;
   const routes: IBreadcrumb[] = [
-    { path: 'index', breadcrumbName: 'Dashboard' },
-    { path: '/users', breadcrumbName: 'Users' },
-    { path: 'second', breadcrumbName: 'List' }
+    { path: '', breadcrumbName: 'Dashboard' },
+    { path: '/dashboard/users', breadcrumbName: 'Users' },
+    { path: '', breadcrumbName: 'List' }
   ]
+
+  const itemRender = (route, params, routes, paths) => {
+    const last = routes.indexOf(route) === routes.length - 1;
+    return last ? (
+      <span>{route.breadcrumbName}</span>
+    ) : (
+      <Link href={`/${paths.join('/')}`}>{route.breadcrumbName}</Link>
+    );
+  }
 
   return(
     <>
+      <Head>
+        <title>Users - Dashboard</title>
+      </Head>
       <PageHeader
         ghost={false}
         title="List users"
-        breadcrumb={{ routes }}
-        subTitle="This is a subtitle"
+        breadcrumb={{routes, itemRender}}
+        subTitle=""
         extra={[
-          <Button href={'/dashboard/users/new'} key="1" type="primary">
-            Add user
+          <Button key="1" type="primary">
+            <Link href="/dashboard/users/new">Add user</Link>
           </Button>,
         ]}
       />
@@ -31,11 +46,15 @@ export default function Users(pageProps) {
   )
 }
 
-export async function getServerSideProps(context) {
+Users.layout = "Dashboard"
+
+export async function getServerSideProps(context: any) {
   return {
 		props: {
-			// params: context.params,
-      query: context.query
+      query: context.query,
+      layout: "Dashboard"
 		}
 	}
 }
+
+export default withAuth(Users)
